@@ -3,7 +3,7 @@ Spring Rod Plus is an interactive simulation of a Tensegrity robot, built with C
 of a tensegrity, Spring Rod Robot, designed at NASA Ames. Basic instructions:
 1) Download SpringRodPlus.html.
 2) Download Cannon.js (http://schteppe.github.io/cannon.js/).
-3) Place SpringRodPlus.html in the "demos" folder found in the Cannon/JS master folder.
+3) Place SpringRodPlus.html in the "demos" folder found in the Cannon.JS master folder.
 4) Open SpringRodPlus in a web broswer. No internet connection is necessary. Spring Rod Plus has been successfully
 tested on Safari for macOS, as well as Firefox and Chrome for both macOS and PC. Spring Rod Plus is buggy when run
 on Microsoft Edge. 
