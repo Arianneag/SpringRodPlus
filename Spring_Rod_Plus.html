@@ -1,0 +1,919 @@
+<!-- 
+///Starts April 6th.
+/// 
+ -->
+<!DOCTYPE html>
+<html>
+  <head>
+	<title>Spring Rod Plus Robot</title>
+	<meta charset="utf-8">
+	<link rel="stylesheet" href="css/style.css" type="text/css"/>
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+  </head>
+  <body style="background-size: cover; background-repeat:no-repeat;">
+  	<div style="width:20%"></div>
+  	<div id="topWindow" >  		
+  		<div style="height:25px; width:45%">                        
+			----------
+			<button id ="addRobot" title="Click to add a robot to the screen and begin the simulation. You can use the mouse buttons/wheel to adjust the robot display."  style="height:100%;border-radius: 8px;font-size: 14px" >Start/Add Robot</button>
+			<button id ="toggleDisplay"  title="Click to toggle the display of the control panel below." style="height:100%;border-radius: 8px;font-size: 14px" onclick="toggleConfig()">Hide Control Panel</button>
+	    	<button id="helpButton"  title="Click to toggle the dispaly of a help panel at the bottom of this panel. If you're new to Spring Rod Plus, this is a good place to start." style="height:100%;border-radius: 8px;font-size: 14px" onClick="toggleHelp()">Show Help</button>		
+		</div>
+		<div  style="height:25px;" > 
+			 <p id="timer"></p>
+		</div>
+		<button id="pause" title="Click to pause robot. It may take several seconds after clicking for the robot to pause." onclick="pauseRobot()">Pause</button>
+	    <button id="resume" onclick="resume()" title="Click here to unpause the robot.">Resume</button>
+	    <button id="restart" title= "Click to erase the robot and trail currently on screen. onClick="restart()">Restart</button>
+	    <button id="resetPosition" title = "Click to move the robot back to its original position. Hitting the space bar also has the same effect." onClick="resetPosition()" >Reset Position</button>
+	    <button id="trail" title ="Click to toggle a trail of dots that the robot leaves behind its path. A small dot is placed on screen
+	    every time a pair of motors completes a sequence of rotation. A large dot appears every time all three pairs of motors have completed a 
+	    sequence of rotation." onclick="toggleTrail(this)" value="ON" style="height:20px;">Disable Trail</button>
+  	<div id="config" >
+  	<div id="main" style="float:left; height:40%; width: 450px;">
+  	<div id="control-panel" >
+  		<p title="Motors run two at a time; the first pair runs, then the second, then the third, then back to the first, second, etc. Each motor shows up on the robot as a different color (0=red, 1=orange, 2=yellow, 3=green, 4=blue, 5=purple).">Select pairs of motors:</p>
+		   <div  >
+			1st pair:   
+			<select id="motor0" name="motorSelect" title="Here is where you select the first motor of the first pair of motors to run in a sequence."> 
+			</select> 
+			<select id="motor1" name="motorSelect" title="Here is where you select the second motor of the first pair of motors to run in a sequence.">
+		 	</select>  
+	      	Run Time (seconds):
+	      	<input id="time" min ="1" max="999999" type="number" value=180 title="Input run time in seconds. Must be a value from 1 to 999999." style="width:15%">
+	      </div>
+	      <div >
+	      2nd pair:
+		 	<select id="motor2" name="motorSelect" title="Here is where you select the first motor of the second pair of motors to run in a sequence.">
+			</select> 
+			<select id="motor3" name="motorSelect" title="Here is where you select the second motor of the second pair of motors to run in a sequence.">
+			</select>
+			Speed (iterations/cycle):
+			<input id="speed" min ="500" max="9999"  type="number" value="1000" size="5" title="Input speed in iterations/cycle. The smaller the value, the fewer iterations it takes to complete a cycle of motor pair rotation, hence the faster the speed. Must be between 500 and 9999." style="width:10%;">
+		</div>   
+	      <div>
+	  			3rd pair:
+			<select id="motor4" name="motorSelect" title="Here is where you select the first motor of the third pair of motors to run in a sequence.">
+			</select> 
+			<select id="motor5" name="motorSelect" title="Here is where you select the second motor of the third pair of motors to run in a sequence.">
+			</select>
+	      	<button id="UpdateSettings" title="Click to set the robot's current settings to those selected in the control panel and run the robot (if added already). The timer won't change if the 'Pause' button is pressed; otherwise, the timer will be reset." style="height:20px;" onclick="updateSettings()">Update Settings and Run</button>	
+	        <button id="restore" title="Click to reset the control panel to its original settings." onclick="restoreDefaults()">Restore Defaults</button>
+	       </div>
+	      </div>	
+	      <p id="currentSettings" title="Below are the configurations the robot is current set to under under" style="height:20px;">Current Settings:</p>
+	      <p id="demo" title="Here are the configurations the robot is current set to under under"  ></p>
+	     </div>  
+	    <div id="JSON" style="display:flex;flex-direction:row; justify-content: space-around; width:40%" >   	
+	     <div id="printJSON" style="width:40%;"   >
+	     	<p  id="demo2"  style="overflow-y: scroll; overflow-x: scroll; height:120px; display:flex;flex-direction: column">Click the "Print Saved" button to see a list of your current saved settings in JSON format. Once your list is printed, a link will appear below; click on it to download your list as a txt file.
+	     	</p>
+	     	<p></p>	     	
+	     	<button id="print" title ="Click here to see a list of your current saved settings in JSON format." onclick="printSaved()"> Print Saved </button>
+	     	<p id="demo3"  > <br><br/>   </p>
+	     		<!--<input id="JSONupload" type="file" />-->	     	
+	     </div>
+	     	<div id="loadJSON" style="width:40%;"  >
+		      	<textarea id ="inputJSON" style="overflow-y: scroll; overflow-x: scroll; height:120px; display:flex;flex-direction: column">Write/paste list of saved settings in JSON format. This list can be copied from a JSON file saved/downloaded from the interface to the left. You can also type directly here, but your text must be in proper JSON format. Example:
+	     			{"name":"configuration 2","motors":[[1,2],[3,4],[5,0]],"speed":1100,"run time":100}{"name":"configuration 1","motors":[[2,5],[0,4],[1,3]],"speed":1000,"run time":60} </textarea>
+		      	<p></p>
+				<button id="load" title="Click to load the above list of settings to your saved setings dropdown." onClick="loadSettings()">Load Above Settings</button>	   	   
+	   	     </div>	 
+	 </div>	 
+	        <div align="left">
+	     		 <button id="save" title="Click to save your 'Current Settings'." onclick="saveSettings()">Save Settings</button>
+	     		 <select id="savedSettings" title="Here is a drop-down of all of your saved configurations." > 
+	     		 </select>
+
+	     		 <button id="retrieve" title="Click to load the settings selected to the left onto the control panel." onClick="retrieve()"> Retrieve Selected Settings</button>
+	     		 <button id="delete" title= "Click to delete the currently selected settings."onClick="deleteSaved()"> Delete Selected Settings</button>
+ 			</div>
+ </div>
+	     <div id="helpWindow" style="height:175px; display:none; overflow-y: scroll;"> 
+	     	Click on a question to show/hide the answer:
+		    <button class="helpAccordion">What is "Spring Rod Plus"?</button>
+		    <div class="helpContent">
+				<p>Spring Rod Plus is an interactive simulation of a tensegrity robot.</p>
+			</div>
+			<button class="helpAccordion">What is a "tensegrity" robot?</button>
+			<div class="helpContent">
+				<p> The essential components of a tensegrity are cables and rods. These components work together in a way similar to the movements of the skeletal structure of an animal or human. Just like an animal or human's bones do not touch but are connected via flexible tendons, a tensegrity's rods do not touch each other but are connected via cables. In a very simple tensegrity robot design, motors act as pulleys that can spool the cables in either direction. <br><br/>
+
+				Tensegrity robots can come in a number of shapes and sizes. However, a typical design includes 6 rods and 12 vertices arranged in a symmetrical 3-D structure; there are 3 pairs of rods with each member of the pair being parallel to the other member, and perpendicular to the other pairs. This is the structure that Spring Rod Plus is based on.</p>
+			</div>
+		    <button class="helpAccordion">How can I use my mouse to change the size, angle, and position of the robot on my screen?</button>
+			<div class="helpContent">
+				<p>Use the wheel of your mouse to scroll in/out. 
+				Left click and drag to change the angle of the robot display.
+			    Right click and drag to slide the robot display up, down, left, or right.</p>
+			</div>
+			<button class="helpAccordion">Tell me about the top row of buttons in the upper left.</button>
+			<div class="helpContent">
+				<p>If there is no robot currently on the screen, clicking "Start/Add Robot" will start the simulation and add a robot. 
+				<br><br/> Clicking the "Hide Control Panel"/"Show Control Panel" will toggle the display of the control panel, i.e., the features between the first two rows of 
+				buttons and this help window. <br><br/> Clicking the "Hide Help"/"Show Help" button will toggle display of this help window. </p>
+			</div>
+			<button class="helpAccordion">Tell me about the second row of buttons in the upper left.</button>
+			<div class="helpContent">
+				<p>The "Pause" button will pause the robot in place until the "Resume" button is clicked. Bear in mind that it may take a few moments for the robot to pause
+					after it is clicked. Note that, once "Resume" is clicked, the timer will resume at the time it stopped when the simulation was paused. The timer won't change if the 'Pause' button is pressed. Another way to pause the simulation is to press the "p" key on your keyboard; you then resume by hitting the "p" button again. However, there is a difference between the two methods of pausing: If you pause with the "p" key, even though the timer will appear to have stopped, it's actually still running in the background. When you resume by pressing the "p" key, the timer will update to the new time, according to how many seconds have ellapsed during pausing. 
+				<br><br/> Clicking the "Restart" button will eliminate all robots from the screen. One must click "Start/Add Robot" to start the simulation again. <br><br/> Clicking the "Reset Position" will re-position the robot in the center of the screen,
+				as it was when the "Start/Add Robot" button was first clicked. The robot will continue to move as it was before the "Reset Position" button was pressed, 
+				moving as it was before. Pressing the space bar will also reset the robot position. <br><br/> Clicking the "Disable Trail"/"Enable Trail" button will show or hide a trail of dots placed behind the robot as it moves. </p>
+			</div>
+			<button class="helpAccordion">What does "Select Pairs of Motors" mean?</button>
+			<div class="helpContent">
+			  <p>The Spring Rod Plus Robots each have 6 motors. The motors run two at a time. 
+			  Here in the control panel you may select how you want to "pair up" your motors. The first pair of motors will run first; then the second; then the third. 
+			  <br><br/>Each motor corresponds to a color on the robot, in order of the color spectrum: motor 0 is red, 1 is orange, 2 is yellow, 3 is green, 4 is blue, and 5 is purple. As each pair of motors runs, the cables that they are moving will turn red on the simulation. 
+			  </p>
+			</div>			
+			<button class="helpAccordion">What does "Run Time" mean?</button>
+			<div class="helpContent">
+			  <p>This is where you decide how long the robot will move in seconds before it stops. The minimum value is 1; the maximum is 999999.
+			  </p>
+			</div>
+			<button class="helpAccordion">What does "Speed" mean?</button>
+			<div class="helpContent">
+			  <p>This is where you input how fast the motors will rotate in iterations per cycle. A "cycle" simulates the process of a real tensegrity rotating a pair of motors in one direction, and then rotating the opposite direction by the same amount. In other words, a motor starts at the center of a cable, rotates to the end of a cable, then rotates back in, returning to the center; the motor it is paired with does the same, completing a cycle. An "iteration" is one step of a cycle, where each motor of a pair rotates a small amount. The more iterations it takes to complete a cycle, the slower the robot will run. Hence, the robot will run faster with a lower "speed" value. Speed must be an integer value from 500 to 9999. 
+			  </p>
+			</div>
+			<button class="helpAccordion">What does the "Update Settings and Run" button do?</button>
+			<div class="helpContent">
+			  <p>Click the "Update Settings and Run" button and the robot will switch to the settings you just inputted. The "Current Settings" display below the control panel will now show 
+			  	these new settings. Note that if your robot is paused while you click "Update Settings and Run", the timer will NOT be reset. If you click "Update Settings and Run" while the robot is not paused, then the timer will be reset.  
+			  </p>
+			</div>
+			<button class="helpAccordion">What does the "Restore Defaults" button do?</button>
+			<div class="helpContent">
+			  <p>Click the "Restore Defaults" button to return the control panel to the settings initially displayed upon launch. It should be noted that clicking the "Restore Defaults" button only affects
+			  	the control panel and does not affect the settings the robot is current running under (as shown in the "Curent Settings" display). In order to set the robot to the settings shown in the control panel, 
+			  	click the "Update Settings and Run" button. 
+			  </p>
+			</div>
+			<button class="helpAccordion">Tell me about the "settings" buttons in the bottom row.</button>
+			<div class="helpContent">
+			  <p>Clicking the "Save Settings" button will save the current settings (as shown in the "Current Settings" display) under a name of your choice. Each saved setting is listed by name
+			  	in the menu to the right of the "Saved Settings" button.<br><br/>
+			  	Clicking the "Retrieve Settings" button will set the control panel to the the saved settings selected in the menu to the left. It should be noted that clicking the "Retrieve Settings" button only affects
+			  	the control panel and does not affect the settings the robot is currently running under (as shown in the "Curent Settings" display). In order to set the robot to the settings shown in the control panel, 
+			  	click the "Update Settings and Run" button. <br><br/>
+			  	Clicking the "Delete Selected Settings" button will delete the currently selected saved settings in the menu to the left.
+			  </p>
+			</div>
+			<button class="helpAccordion">Tell me about the "Print Saved" feature.</button>
+			<div class="helpContent">
+			  <p> When you click the "Print Saved" button, all your saved settings (as stored in the menu to the right of the "Saved Settings" button) will be displayed in the above window. The settings will be listed
+			  	as objects in JSON format. After you click "Print Saved", a link should appear below; clicking this link will download a txt file of the JSON objects printed above. 
+			  </p>
+			</div>
+			<button class="helpAccordion">Tell me about the "Load Above Settings" feature.</button>
+			<div class="helpContent">
+			  <p> Clicking the "Load Above Settings" button will take a list of settings in JSON format in the above display and upload it into the "saved settings" menu. This help you upload settings that you already downloaded using the "Print Saved" feature; just copy the contents of the downloaded txt file and paste it into the window above the "Load Above Settings" button. 
+
+			  <br><br/> You may also manually type data into this window, but it must be in valid JSON format. This, for example, is valid formatting: <br> {"name":"configuration 1","motors":[[2,5],[0,4],[1,3]],"speed":1000,"run time":60}<br/> {"name":"configuration 2","motors":[[1,2],[3,4],[5,0]],"speed":1100,"run time":100}
+			  </p>
+			</div>
+			<button class="helpAccordion">Tell me about the graph in the upper left and the gui in the upper right of the screen, as well as the keyboard commands that control them.</button>
+			<div class="helpContent">
+			  <p> These are part of the Cannon.js physics module. Details about these features will not be discussed here; go to http://www.cannonjs.org for more information on Cannon.js. However, it should be noted that some keyboard commands do affect these features: <br><br/>
+			  Press the "h" key to toggle display of these features.<br><br/>
+			  Press the spacebar to reset the robot in the middle of the screen, where it started. Note that this has the same affect as pressing the "reset position" button.<br><br/>
+			  Press the "a" key to toggle the "aabbs" checkbox in the "rendering" drawer of the gui.<br><br/>
+			  Press the "c" key to toggle the "constraints" checkbox in the "rendering" drawer of the gui.<br><br/>
+			  Press the "m" key to toggle the "rendermode" dropdown in the "rendering" drawer of the gui.<br><br/>
+			  Press the "p" key to pause the simulation, if a robot is present and running. Note that, if you pause with the "p" key, even though the timer will appear to have stopped, it's actually still running in the background. When you resume by pressing the "p" key, the timer will update to the new time, according to how many seconds have elapsed during pausing. If you wish to pause and keep the timer paused, click the "pause" button in the user interface instead.
+			  </p>
+			</div>
+	 	</div>
+	</div>
+
+	<script src="../build/cannon.js"></script>
+	<script src="../build/cannon.demo.js"></script>
+	<script src="../libs/dat.gui.js"></script>
+	<script src="../libs/Three.js"></script>
+	<script src="../libs/TrackballControls.js"></script>
+	<script src="../libs/Detector.js"></script>
+	<script src="../libs/Stats.js"></script>
+	<script src="../libs/smoothie.js"></script>
+	<script>
+
+		const DEFAULT_MOTOR_SEQUENCE = [[2, 5], [0,4],[1,3]];
+		const SIMPLE_DEFAULT_MOTOR=[2,5,0,4,1,3];
+		const DEFAULT_RUN_TIME = document.getElementById('time').value;
+		const DEFAULT_SEQUENCE_TIME_MAX=document.getElementById('speed').value;
+		const SEQUENCE_TIME_FUDGE_FACTOR = .8;
+		const PAIR_SIZE=2;
+		const NUM_PAIRS=3;
+		const NUM_MOTORS=PAIR_SIZE*NUM_PAIRS;
+		const MIN_RUN_TIME =document.getElementById("time").min;
+		const MAX_RUN_TIME = document.getElementById("time").max;
+		const MIN_SPEED = document.getElementById("speed").min;
+		const MAX_SPEED =document.getElementById("speed").max;
+		const RAINBOW=["red","orange","yellow","green","blue","purple"]
+
+		var motorSequence = [[2, 5], [0,4],[1,3]];
+		var runTime = DEFAULT_RUN_TIME;
+		var runTimeUpdated=runTime;
+		var sequenceTimeMax=DEFAULT_SEQUENCE_TIME_MAX;
+		var updatedSequenceTimeMax=DEFAULT_SEQUENCE_TIME_MAX;
+		var updatedMotorSequence= [[2, 5], [0,4],[1,3]];	
+		var pauseUpdate= false;
+		var pause=false;
+		var startSeconds=0;
+		var endSeconds=0;
+		var ellapsedSeconds=0;
+		var pauseTime=0;
+		var isRunning=true;
+		var startCount=0;
+		var	startSecondsUpdated=startSeconds;
+		var	endSecondsUpdated=endSeconds;
+		var	ellapsedSecondsUpdated=ellapsedSeconds;
+		var	pauseTimeUpdated=pauseTime;
+		var resetTime=true;
+		var settingsHash = new Object();
+ 		var hashCount=1;
+ 		var settingsSelect = document.getElementById('savedSettings');
+ 		var trail=true;
+
+		//used in the original Spring Rod Demo
+		var time = 0;
+		var left =1;
+		var demo = new CANNON.Demo({stepFrequency: 180});
+		var size = 1;
+		var initScale = 0.8;
+		var initTrans = [0, 0, 1];
+		var initVelocity = [-1, -1, 0];
+		var world = demo.getWorld();
+
+		//used for testing purposes
+		var cumDelta =[[0,0],[0,0],[0,0]];
+		var ballCount=0;
+		var largeBallCount=0;
+		
+		//Restores the original settings in the control pannel. It does not, however, execute these settings.
+		function restoreDefaults(){
+			var ms=copyMotorSequence(DEFAULT_MOTOR_SEQUENCE);
+			document.getElementById("time").value = DEFAULT_RUN_TIME; 
+			document.getElementById("speed").value = DEFAULT_SEQUENCE_TIME_MAX; 
+			document.getElementById("motor0").value=  ms[0][0];
+			document.getElementById("motor1").value =  ms[0][1];
+			document.getElementById("motor2").value = ms[1][0];
+			document.getElementById("motor3").value =  ms[1][1];
+			document.getElementById("motor4").value =  ms[2][0];
+			document.getElementById("motor5").value =  ms[2][1];
+		};
+		//Pauses the robot (after completing its current iteration)
+		function pauseRobot(){
+			pauseUpdate=true;
+		};
+
+		//Robot resumes motion with its current settings.
+		function resume(){
+			time=0;
+			pauseUpdate=false;
+		};
+
+		//Robot moves back to original position in the center of the screen.
+		function resetPosition(){
+			demo.restartCurrentScene();
+		};
+
+		//restarts the simulation, giving the original dark screen with no robot. The control panel remains unaffected, however.
+		function restart(){
+		document.getElementById("demo").innerHTML = " motor pair 1: "+ motorSequence[0] + ", motor pair 2: " + motorSequence[1] + ", " + "motor pair 3: "+ motorSequence[2]+ '<br><br>run time: '+runTime+ ", speed: " +sequenceTimeMax;
+			ballCount=0;
+		    largeBallCount=0;
+			isRunning=false;
+			document.getElementById("addRobot").disabled=false;
+			demo.changeScene();
+		};
+ 		
+ 		//Saves the current configurations (including motor pairs, speed, and run time) as a menu option. User is given a prompt to name this configuration; each configuration must have a different name.
+		function saveSettings(){
+			var settingsName ="";
+			settingsName = prompt("Please enter a name for this set of configurations. All characters are valid, except for braces.", "configuration " + hashCount);
+			if (settingsName == null || settingsName == "") {
+				if (settingsName==""){	
+					alert("Please enter a name for your saved settings!");
+					saveSettings();
+				}
+			} 
+			else if (settingsName.indexOf('{')>-1 || settingsName.indexOf('}')>-1){
+				alert('Please do not use braces \{\} as characters!');
+				saveSettings();	
+			}	
+
+			else {
+				if( settingsHash[settingsName]==null){
+					hashCount ++;
+					var savedMotorSequence=copyMotorSequence(motorSequence);
+					var savedSettingsArray = {"name": settingsName, "motors":savedMotorSequence , "speed":updatedSequenceTimeMax, "run time": runTime};
+					settingsHash[settingsName] =savedSettingsArray;
+					var newSettings=document.createElement('option');
+					newSettings.value=settingsName;
+					newSettings.innerHTML=settingsName;
+					settingsSelect.appendChild(newSettings);
+					document.getElementById('savedSettings').value=settingsName;
+				}
+				else{
+					alert("Please choose another name! '"+  settingsName+"' is already in use.");
+					saveSettings();
+				}
+			} 
+		};
+
+		//Takes as a parameter a 3x2 array of motor sequences and returns a copy of it. 
+		function copyMotorSequence(ms){
+			var savedMotorSequence= [[null, null], [null, null], [null, null]];
+			 for (var i=0; i<ms.length;i++){
+			 	for (var j=0; j<ms[i].length;j++){
+			 		savedMotorSequence[i][j]= ms[i][j];
+			 	}
+			 }
+			return savedMotorSequence;
+		};
+
+		//Changes the options in the control panel to the current selected option in the saved menu of configurations. 
+		function retrieve(){
+			var settingsSelectValue = document.getElementById('savedSettings').value;
+			document.getElementById("time").value = settingsHash[settingsSelectValue]["run time"];
+			document.getElementById("speed").value =settingsHash[settingsSelectValue]["speed"];
+			document.getElementById("motor0").value = Math.round(settingsHash[settingsSelectValue]["motors"][0][0]);
+		    document.getElementById("motor1").value = Math.round(settingsHash[settingsSelectValue]["motors"][0][1]);
+			document.getElementById("motor2").value = Math.round(settingsHash[settingsSelectValue]["motors"][1][0]);
+			document.getElementById("motor3").value= Math.round(settingsHash[settingsSelectValue]["motors"][1][1]);
+			document.getElementById("motor4").value = Math.round(settingsHash[settingsSelectValue]["motors"][2][0]);
+			document.getElementById("motor5").value = Math.round(settingsHash[settingsSelectValue]["motors"][2][1]);
+		}
+
+		//Stops robot from leaving behind a trail of dots. It does not delete currently existing dots, however. 
+		function toggleTrail(button){
+			if(button.value=="OFF") {
+			    button.value="ON"
+			    button.innerHTML="Disable Trail"
+			    trail= true;
+			} else if(button.value=="ON") {
+			    button.value="OFF"
+			    button.innerHTML="Enable Trail"
+			    trail = false;
+    		}
+		};
+
+		//prints to the window on the right a list of all the saved confurations, complete with their names, motor pairs, run times and speeds.
+	    function printSaved(){
+	    	var settingsSelect  = document.getElementById('savedSettings');
+	    	var myJSON= "";
+	    	for (i=0; i< settingsSelect.options.length;i++){
+	    		myJSON += JSON.stringify(settingsHash[settingsSelect.options[i].value]);	
+	    	}
+	    	if (settingsSelect.options.length>0){
+	    		document.getElementById("demo2").innerHTML = myJSON;
+	    		download(myJSON, "JSON.txt", 'text/plain');
+	    	}
+	    	else{
+	    		document.getElementById("demo2").innerHTML = "You currently have no saved configurations to print."
+	    		if (document.getElementById("a")!=null){
+	    			document.getElementById("a").remove();}
+	    	}	    	
+	    };
+
+	    //deletes the currently selected saved settings after user confirms with a confirm window.
+	    function deleteSaved(){
+	    	var settingsSelect = document.getElementById('savedSettings');
+	    	if (settingsSelect.value != "" && settingsSelect.value != null){
+		    	settingsHash[settingsSelect.value]=null;
+		    	if (window.confirm("Are you sure you want to delete the currently selected configuration " + "'"+settingsSelect.value+"'?")){;
+		    		settingsSelect.remove(settingsSelect.value);}
+	    	}
+	    	else
+	    		{window.alert("Oops! You currently have no saved settings to delete.");
+	    	}
+	    };
+
+	    //downloads the JSON-formatted list of configurations as a txt file.
+	    function download(content, fileName,contentType) {
+		  document.getElementById('demo3').innerHTML ="";
+	      var a       = document.createElement('a');
+	      a.id='a';
+	      var file = new Blob([content], {type: contentType});
+	      a.href = URL.createObjectURL(file);	      
+	      a.download  =  fileName;
+	      a.innerHTML = 'download .txt file of json';
+	      document.getElementById('demo3').appendChild(a);
+		};
+
+		//takes user input of settings in JSON format and loads to the select menu.
+		function loadSettings(){
+			if (confirm("Are you sure you want to load this list of settings? Your current selection will be deleted.")){	
+				var validJSON=true;
+				var selectBox= document.getElementById('savedSettings');
+				var settingsText=document.getElementById('inputJSON').value;
+				var settingsList=[];
+				var newSettingsList=[];
+				settingsList=settingsText.split('{');
+				if (settingsList.length<=1){
+					validJSON=false;
+					invalidLoad();
+				}
+				else{					
+					for(var i = 1;i<settingsList.length;i++){
+						try{
+							var settings=JSON.parse('{'+settingsList[i]);		
+							if(testLoad(settings)==true){
+								settingsHash[settings['name']]=settings;
+								var newSettings=document.createElement('option');
+								newSettings.value=settings['name'];
+								newSettings.innerHTML=settings['name'];						
+								newSettingsList.push(newSettings);
+							}
+							else{
+								validJSON=false;
+								i=settingsList.length;
+							}
+						}
+						catch(err){
+							validJSON=false;
+							invalidLoad();
+						}
+					}
+					if (validJSON==true){
+						clearSettings();
+						for (var i=0; i<newSettingsList.length;i++){
+							selectBox.appendChild(newSettingsList[i]);
+						}
+					}
+				}
+			}
+		};
+
+		//Clears the menu of saved settings.
+	function clearSettings()
+	{
+	    var selectBox= document.getElementById('savedSettings');
+	    selectBox.options.length=0;
+	};
+
+	//Shows or hides the configurations panel.
+	function toggleConfig(){
+		if (document.getElementById('toggleDisplay').innerHTML=="Hide Control Panel"){
+			document.getElementById('config').style.display="none";
+			document.getElementById('toggleDisplay').innerHTML="Show Control Panel"
+		}
+		else {
+			document.getElementById('config').style.display="block";
+			document.getElementById('toggleDisplay').innerHTML="Hide Control Panel"
+		}
+	};
+
+	//Displays the current settings.
+	function updateDemo(){
+		document.getElementById("demo").innerHTML = " motor pair 1: "+ motorSequence[0] + ", motor pair 2: " + motorSequence[1] + ", " + "motor pair 3: "+ motorSequence[2]+ '<br><br>run time: '+runTimeUpdated+ ", speed: " +updatedSequenceTimeMax;
+	};
+
+	//Shows or hides the help window.
+	function toggleHelp(){
+		if (document.getElementById('helpButton').innerHTML=="Show Help"){
+			document.getElementById('helpWindow').style.display="block";
+			document.getElementById('helpButton').innerHTML="Hide Help"
+		}
+		else {
+			document.getElementById('helpWindow').style.display="none";
+			document.getElementById('helpButton').innerHTML="Show Help"
+		}
+	};
+
+	//This makes sure the input for loadSettings() is in valid format. If valid, returns true. Otherwise returns false.
+	function testLoad(s){
+		try{
+			var goodRange=0;
+			if (s["name"]==undefined || s["name"]==""){
+				alert('Oops! You did not enter the "name" parameter for one of your objects.');
+			return false;
+			}		
+			 if ( typeof s["run time"]=="number" ){
+				if(s["run time"]!=Math.floor(s["run time"])){
+					typeErr(s["run time"], "run time");
+					return false;
+				}
+				if (s["run time"]<MIN_RUN_TIME){
+					alert('Oops! Your value for run time for the object with the name "' +s["name"]+ '" is less than ' +MIN_RUN_TIME+'!')
+					return false;
+				}
+				if (s["run time"]>MAX_RUN_TIME){
+					alert('Oops! Your value for run time for the object with the name "' +s["name"]+ '" is greater than ' +MAX_RUN_TIME+'!')
+					return false;
+				}			
+			}
+			else if (typeof s["run time"]=="string"){
+				try {
+					if(Number(s["run time"])!=Math.floor(Number(s["run time"]))){	
+						typeErr(s["run time"], "run time");
+						return false;
+					}
+					if (Number(s["run time"])<MIN_RUN_TIME){
+						alert('Oops! Your value for run time for the object with the name "' +s["name"]+ '" is less than ' +MIN_RUN_TIME+'!')
+						return false;
+					}
+					if (Number(s["run time"])>MAX_RUN_TIME){
+						alert('Oops! Your value for run time for the object with the name "' +s["name"]+ '" is greater than ' +MAX_RUN_TIME+'!')
+						return false;
+					}
+				}
+				catch(e){
+					typeErr(s["run time"], "run time");
+					return false;
+				}
+			}	
+			else {
+				typeErr(s["run time"], "run time");
+				return false;
+			}
+			if (typeof (s["speed"])=="number" ){
+				if(s["speed"]!=Math.floor(s["speed"])){
+				typeErr(s["speed"], "speed");
+				return false;
+			}}			
+			else if (typeof s["speed"]=="string"){
+				try {
+					if(Number(s["speed"])!=Math.floor(Number(s["speed"]))){	
+						typeErr(s["speed"], "speed");
+						return false;
+					}
+					if (Number(s["speed"])<MIN_RUN_TIME){
+						alert('Oops! Your value for run time for the object with the name "' +s["name"]+ '" is less than ' +MIN_RUN_TIME+'!')
+						return false;
+					}
+					if (Number(s["speed"])>MAX_RUN_TIME){
+						alert('Oops! Your value for run time for the object with the name "' +s["name"]+ '" is greater than ' +MAX_RUN_TIME+'!')
+						return false;
+					}
+				}
+				catch(e){
+					typeErr(s["speed"], "speed");
+					return false;
+				}
+			}	
+			else {
+				typeErr(s["speed"], "speed");	
+			}
+			function typeErr(value, parameter){
+				alert('Oops! The value for your "'+parameter+'" parameter for the object with name "'+s["name"]+'", ' +value +', is not an integer. Your "'+parameter+'" parameter must be an integer or equivalent.');	
+			};
+
+			function motorErr(i, j){
+				alert('Oops! the motor value "' + s["motors"][i][j]+ '" in the object with the name "'+s["name"]+   '" is not an integer in the range 0 through ' +(NUM_MOTORS-1)+'.');		
+			};
+
+			function motorLengthErr(){
+				alert('Oops! Your "motors" parameter for the object "'+ s["name"] + '" must incude 3 pairs of integers in the range 0 through 5. For example, motors: [0,1],[2,3],[4,5]');
+			};
+
+			if (s["motors"].length!=NUM_PAIRS ||s["motors"][0].length!=PAIR_SIZE){
+				motorLengthErr();
+				return false;
+			}
+			else{
+				for (var i=0; i<s["motors"].length;i++){
+					if (s["motors"][i].length !=PAIR_SIZE){
+						motorLengthErr();
+						return false;
+					}
+					for (var j=0; j<s["motors"][i].length;j++){
+						if (typeof s["motors"][i][j]=="number"){
+							if (s["motors"][i][j]!=Math.floor(s["motors"][i][j])){
+								motorErr(i, j);	
+								return false;
+							}
+						}
+						else if (typeof s["motors"][i][j]=="string"){
+								if (Number(s["motors"][i][j])!=Math.floor(Number(s["motors"][i][j]))){
+								motorErr(i, j);	
+								return false;
+							}
+						}
+						else{
+								motorErr(i, j);	
+								return false;
+						}
+						if (s["motors"][i][j]===""){
+								motorErr(i, j);	
+								return false;
+						}
+					    if (0<=s["motors"][i][j]&&s["motors"][i][j]<NUM_MOTORS){
+
+							goodRange++;
+						}
+						else{
+							motorErr(i,j);
+							return false;
+						}
+						if (goodRange>NUM_MOTORS){
+							j=s["motors"][i].length;
+							i=s["motors"].length
+						}
+					}
+				}
+				if (goodRange==NUM_MOTORS){
+					return true;
+				}
+				else{
+					alert("Oops! You don't have the correct number of motors for object "+ s["name"]);
+					return false;
+				}
+			}
+		}
+		catch(err){
+			invalidLoad();
+			return false;
+		}
+	};
+
+	//gives and error message if user loads improperly formatted text.
+	function invalidLoad(){
+		alert("Oops! You did not enter text in proper JSON format.");
+	};
+
+	//toggles the visibility of the help window.
+	function toggleHelpFeatures(){
+		var acc = document.getElementsByClassName("helpAccordion");
+		var i;
+		for (i = 0; i < acc.length; i++) {
+			acc[i].style="background-color: #eee; color:#444;cursor:pointer;padding:8px;width:100%;text-align:left;border:none;outline:none;transition:0.4s;";
+			acc[i].nextElementSibling.style.display="none";
+		    acc[i].addEventListener("click", function() {
+		    var content = this.nextElementSibling;
+		    if (content.style.display === "block") {
+		      content.style.display = "none";
+		    } else {
+		      content.style.display = "block";
+		    }
+		  });
+		}
+	};
+	toggleHelpFeatures();
+
+	//programmatically fills the motor dropdowns with options
+	function configMotorSelect(){
+		var ms= document.getElementsByName("motorSelect");	
+		for (var i=0; i<ms.length; i++){
+			for (var j=0;j<NUM_MOTORS;j++){
+				var o = document.createElement("option");
+				if (j ===SIMPLE_DEFAULT_MOTOR[i])
+				{
+					o.selected=j;
+				}
+				else{
+					o.value=j;
+				}
+				o.title="Shows as " +RAINBOW[j]+" on the robot.";
+				o.text=j;
+				o.type="number";
+				ms[i].appendChild(o);			
+			}	
+		}
+	};
+	configMotorSelect();
+
+	//changed the robot's settings to the settings selected in the control panel. 
+	function updateSettings(){
+		motorSequence[0][0]= document.getElementById('motor0').value;
+		motorSequence[0][1]= document.getElementById("motor1").value;
+		motorSequence[1][0]= document.getElementById("motor2").value;
+		motorSequence[1][1]= document.getElementById("motor3").value;
+		motorSequence[2][0]= document.getElementById("motor4").value;
+		motorSequence[2][1]= document.getElementById("motor5").value;
+	 	var timeValue=Math.round(document.getElementById("time").value);
+	 	var speedValue=Math.round(document.getElementById("speed").value);
+		if(timeValue>=MIN_RUN_TIME &&timeValue<=MAX_RUN_TIME  &&speedValue>=MIN_SPEED && speedValue<=MAX_SPEED){
+			runTimeUpdated = timeValue;
+			updatedSequenceTimeMax = speedValue; 
+			time=0;
+		 }	
+		 if (pause==false && pauseUpdate==false){
+		 	resetTime=true;
+			startSeconds=0;
+			endSeconds=0;
+			ellapsedSeconds=0;
+			pauseTime=0;
+		 }
+		updateDemo();
+	};
+
+	var mainSimul = function(){		
+	    updateDemo();
+	    document.getElementById('addRobot').addEventListener('click',function(e){
+	    	var killRobot=false;
+	    	cancel=false;
+	    	pause=false;
+	    	pauseUpdate=false;
+			document.getElementById('addRobot').disabled=true;
+			isRunning=true;
+			time = 0;
+			startSeconds=0;
+			endSeconds=0;
+			ellapsedSeconds=0;
+			pauseTime=0;
+			ballcount=0;
+			largeBallCount=0;
+			resetTime=true;
+			function Vec3FromArray(a) {
+				return new CANNON.Vec3(a[0], a[1], a[2]); 
+			}
+			
+		var rainbowColors = [0xff0000, 0xffa500, 0xffff00, 0x00ff00, 0x0000ff, 0x800080];
+		function VisSpring(demo, body1, body2, restLengthPrc, stiffness, damping, radius, isRod) {
+			var length = body2.position.vsub(body1.position).length();	
+			this.spring = new CANNON.Spring(body1, body2,{
+				restLength: length * restLengthPrc,
+				stiffness: stiffness * 2,
+				damping: damping,
+			});
+			this.spring.initRestLength = this.spring.restLength;
+			this.radius = radius * initScale / 3;
+			this.isRod = isRod;	
+			var cylinderShape = new CANNON.Cylinder(radius, radius, 1.0, 10);
+			this.springBody = new CANNON.Body({ mass: 0 });
+			this.springBody.addShape(cylinderShape);
+			demo.addVisual(this.springBody);
+		}
+		
+		VisSpring.prototype.applyForce = function () {
+			var spring = this.spring;
+			var springBody = this.springBody;
+			//in library in Spring class
+			spring.applyForce();		
+			var loc1 = spring.bodyA.position;
+			var loc2 = spring.bodyB.position;
+			var length = loc2.vsub(loc1).length();
+			spring.bodyA.angularVelocity = new CANNON.Vec3(0, 0, 0);
+			spring.bodyB.angularVelocity = new CANNON.Vec3(0, 0, 0);
+			var orientation = loc2.vsub(loc1);
+			springBody.position = loc2.vsub(loc1).scale((0.5)).vadd(loc1);
+			springBody.quaternion.setFromVectors(new CANNON.Vec3(0, 0, 1.0), orientation);
+			springBody.visualref.scale.set(1,1, length);
+		}
+		
+		///nodes are definted by their position ion the x/y/z axis. Cables and rods are defined by their relation to nodes. 
+		var tens = {"nodes": [[0.0, 0.5, 0.25], [1.0, 0.5, 0.25], [0.0, 0.5, 0.7500000000000001], [1.0, 0.5, 0.7500000000000001], [0.25, 0.0, 0.5], [0.25, 1.0, 0.5], [0.7500000000000001, 0.0, 0.5], [0.7500000000000001, 1.0, 0.5], [0.5, 0.25, 0.0], [0.5, 0.25, 1.0], [0.5, 0.7500000000000001, 0.0], [0.5, 0.7500000000000001, 1.0]], "cables": [[0, 4], [0, 5], [0, 8], [0, 10], [1, 6], [1, 7], [1, 8], [1, 10], [2, 4], [2, 5], [2, 9], [2, 11], [3, 6], [3, 7], [3, 9], [3, 11], [4, 8], [4, 9], [5, 10], [5, 11], [6, 8], [6, 9], [7, 10], [7, 11]], "rods": [[0, 1], [2, 3], [4, 5], [6, 7], [8, 9], [10, 11]]}    	
+    		// Create world
+    		world = demo.getWorld();
+			world.gravity.set(0,0,-9.8);
+			world.broadphase = new CANNON.NaiveBroadphase();	
+	        // Materials
+	        var groundMaterial = new CANNON.Material("groundMaterial");
+	        // Adjust constraint equation parameters for ground/ground contact
+	        var ground_ground_cm = new CANNON.ContactMaterial(groundMaterial, groundMaterial, {friction: 0.01,});
+         		// Add contact material to the world
+	        world.addContactMaterial(ground_ground_cm);
+			// ground plane
+	        var groundShape = new CANNON.Plane();
+	        var groundBody = new CANNON.Body({mass: 0, material: groundMaterial});
+	        groundBody.addShape(groundShape);
+	        groundBody.position.set(0,0,0);
+	        world.addBody(groundBody);
+	        demo.addVisual(groundBody);
+			var defaultMaterial = demo.currentMaterial;
+			var nodes = [];
+			for (var i = 0; i < tens.nodes.length; i++) {
+				for(var j = 0; j < tens.nodes[i].length; j++) {
+					tens.nodes[i][j] *= initScale;
+					tens.nodes[i][j] += initTrans[j];
+				}
+				nodes.push(tens.nodes[i]);
+			}
+			
+			var motorNodes = [0, 10, 7, 3, 9, 4];
+			var motorEndNodes = [[8, 10], [5, 7], [1, 3], [11, 9], [6, 4], [2, 0]];
+			//motor 0 pulls out cable 2 and pull out cable 3, then reverse those.
+			var motorCables = [[2, 3], [18, 22], [5, 13], [15, 14], [21, 17], [8, 0]];	
+			var redMaterial = new THREE.MeshLambertMaterial( { color: 0xff0000 } );
+			var bodies = [];
+			for (var i = 0; i < tens.nodes.length; i++) {
+				var sphereShape = new CANNON.Sphere(.1 * initScale / 3);
+				var nodeBody = new CANNON.Body({mass: 0.1, material: groundMaterial});
+				nodeBody.addShape(sphereShape);
+				nodeBody.position = Vec3FromArray(tens.nodes[i]);
+				nodeBody.velocity = Vec3FromArray(initVelocity);
+				world.addBody(nodeBody);
+				var colorIndex = motorNodes.indexOf(i);
+				demo.addVisual(nodeBody);
+				bodies.push(nodeBody);	
+				if (colorIndex >= 0) {
+					nodeBody.visualref.children[0].material =  new THREE.MeshLambertMaterial({color: rainbowColors[colorIndex]});
+				}				
+			}		
+			demo.currentMaterial = defaultMaterial;
+			var springs = []
+			for (var i = 0; i < tens.cables.length; i++) {
+				springs.push(new VisSpring(demo, bodies[tens.cables[i][0]], bodies[tens.cables[i][1]], 0.7, 100, 3, .01 * initScale, false));
+			}
+			for (var i = 0; i < tens.rods.length; i++) {
+				springs.push(new VisSpring(demo, bodies[tens.rods[i][0]], bodies[tens.rods[i][1]], 1.0, 501, 3, .02 * initScale, true));
+			}
+
+			// Compute the force after each step
+				world.addEventListener("postStep",function(event){		
+				if (isRunning===false){
+					killRobot=true;
+				}	
+				if (killRobot===false ){
+					for (var i = 0; i < springs.length; i++) {
+						springs[i].applyForce();
+					}
+					if (resetTime===true &&isRunning==true &&pause==false){
+						startSeconds=Math.floor(Date.now() / 1000);
+						resetTime=false;
+					}
+					if (ellapsedSeconds-pauseTime<runTime  && pause==false ){
+						endSeconds =Math.floor(Date.now()/1000);
+					 
+						ellapsedSeconds = endSeconds-startSeconds;
+						document.getElementById("timer").innerHTML= "---------- ellapsed time in seconds:";
+						document.getElementById("timer").innerHTML+= ellapsedSeconds-pauseTime;
+					}	
+					else if(pause==true&&pauseUpdate==false &&isRunning==true ){
+						pauseTime+=Math.floor(Date.now()/1000)-endSeconds;
+					}
+					if (time > 50  && pause===false &&((ellapsedSeconds-pauseTime)<runTime )) {
+						var sequence = Math.trunc((time - 50) / sequenceTimeMax) % motorSequence.length;						
+						var sequenceTime = (time - 50) % sequenceTimeMax;
+						if (sequence==0){
+							cumDelta =[[0,0],[0,0]];
+						}
+						for (var i = 0; i < motorSequence[sequence].length; i++) {
+							var motorIndex = motorSequence[sequence][i];						
+							for (var j = 0; j < 2; j++) {
+								var spring = springs[motorCables[motorIndex][j]];
+								 if (sequenceTime <(sequenceTimeMax-1)) {
+								 	//This is the algorithm for expanding/contracting the cables. Note that a sine was is used to ensure the cable 
+								 	//ends at the same length as it started.
+									var delta = 1.2 * Math.sin(Math.PI * sequenceTime / (sequenceTimeMax-1)) * initScale / 3;
+									if (j ==1) {							
+									 	delta *= -1;
+									 }
+									 cumDelta[i][j]+=Math.abs(delta);
+									 if (sequenceTime==sequenceTimeMax*.8-1){
+									 }
+									spring.spring.restLength = spring.spring.initRestLength + delta;
+									spring.springBody.visualref.children[0].material  = redMaterial;
+									if (sequenceTime == (sequenceTimeMax/2)){
+									 }		
+								} else {
+									spring.springBody.visualref.children[0].material  = defaultMaterial;
+									 if (sequenceTimeMax<0){
+									 	sequenceTimeMax=0;
+									 }
+									 //added to pause simulation if pause button is pressed.
+									 pause=pauseUpdate;
+								}
+							}
+						}						
+					}
+					//added to unpause simulation
+					else if(pause===true && pauseUpdate===false){
+						pause=pauseUpdate;
+					}		
+					var totalForce = 0;
+					for (var i = 0; i < bodies.length; i++) {
+						totalForce += bodies[i].force.length();
+					}
+					sequenceTimeMax=updatedSequenceTimeMax;
+					runTime=runTimeUpdated;
+
+			   //code that leaves behind a "trail."
+				if (trail===true && pause===false){			
+					if (sequenceTime == (sequenceTimeMax-1)) {
+						ballCount++;	
+						if (sequence===(motorSequence.length-1)){
+							var sphereShape = new CANNON.Sphere( .35* initScale / 3);
+							largeBallCount++;
+						}
+						else{
+							var sphereShape = new CANNON.Sphere(.2 * initScale / 3);
+						}
+						var nodeBody = new CANNON.Body({mass: 0.1, material: groundMaterial});
+						nodeBody.addShape(sphereShape);
+						var position = CANNON.Vec3.ZERO.clone();
+						for (var i = 0; i < bodies.length; i++) {
+							position.vadd(bodies[i].position, position);
+						}
+						position.scale(1 / bodies.length, position);
+						nodeBody.position = position;
+						demo.addVisual(nodeBody);
+
+						//uncomment line below for testing reasons.
+						//console.log("number of pair runs: " +ballCount + " number of sequence of pair runs: " +largeBallCount +" sequence: " + sequence + " iterations: " + time);
+					}
+				}				
+				if (pause===false){time++;}
+				}});
+			
+		}, false);
+	};
+	
+	demo.addScene("Box", mainSimul);
+	demo.start();
+	</script>
+  </body>
+</html>
