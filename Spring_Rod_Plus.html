@@ -1,5 +1,5 @@
 <!-- 
-/// Welcome to Spring Rod Plus! In order to use Spring Rod Plus, please download the Cannon.JS physics package. Then place the Spring_Rod_Plus.html file in the "demos" folder of the Cannon.js master folder. 
+/// Welcome to Spring Rod Plus! In order to use Spring Rod Plus, please download the Cannon.JS physics package. Then place the Spring_Rod_Plus.html file in the "demos" folder of the Cannon.js master folder. Then launch Spring Rod Plus in a broswer (Safari, Firefox, and Chome all work. Not recommended with Edge). No internet connection required. 
  -->
 <!DOCTYPE html>
 <html>
@@ -753,7 +753,7 @@
 			springBody.visualref.scale.set(1,1, length);
 		}
 		
-		///nodes are definted by their position ion the x/y/z axis. Cables and rods are defined by their relation to nodes. 
+		///nodes are defined by their position ion the x/y/z axis. Cables and rods are defined by their relation to nodes. 
 		var tens = {"nodes": [[0.0, 0.5, 0.25], [1.0, 0.5, 0.25], [0.0, 0.5, 0.7500000000000001], [1.0, 0.5, 0.7500000000000001], [0.25, 0.0, 0.5], [0.25, 1.0, 0.5], [0.7500000000000001, 0.0, 0.5], [0.7500000000000001, 1.0, 0.5], [0.5, 0.25, 0.0], [0.5, 0.25, 1.0], [0.5, 0.7500000000000001, 0.0], [0.5, 0.7500000000000001, 1.0]], "cables": [[0, 4], [0, 5], [0, 8], [0, 10], [1, 6], [1, 7], [1, 8], [1, 10], [2, 4], [2, 5], [2, 9], [2, 11], [3, 6], [3, 7], [3, 9], [3, 11], [4, 8], [4, 9], [5, 10], [5, 11], [6, 8], [6, 9], [7, 10], [7, 11]], "rods": [[0, 1], [2, 3], [4, 5], [6, 7], [8, 9], [10, 11]]}    	
     		// Create world
     		world = demo.getWorld();
@@ -784,7 +784,7 @@
 			
 			var motorNodes = [0, 10, 7, 3, 9, 4];
 			var motorEndNodes = [[8, 10], [5, 7], [1, 3], [11, 9], [6, 4], [2, 0]];
-			//motor 0 pulls out cable 2 and pull out cable 3, then reverse those.
+			//motor 0 pulls out cable 2 and pulls out cable 3, then reverse those.
 			var motorCables = [[2, 3], [18, 22], [5, 13], [15, 14], [21, 17], [8, 0]];	
 			var redMaterial = new THREE.MeshLambertMaterial( { color: 0xff0000 } );
 			var bodies = [];
